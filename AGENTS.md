@@ -27,7 +27,7 @@ These exist there and are not here yet. Each is a decision, not a copy:
 
 - Adding any dependency to a Python lab.
 - Changing the severity rubric's reference model, or declaring applicability facts. Both are open owner decisions recorded in `CONVENTIONS.md`.
-- Choosing or changing the licence.
+- Changing the licence.
 - Deleting or renaming any file.
 - Changing the page template structure or the claim-label scheme.
 - Any git history rewrite or force push.
@@ -36,5 +36,6 @@ These exist there and are not here yet. Each is a decision, not a copy:
 
 ## Decisions
 
+- **2026-11-06: The course is openly licensed: MIT for code, CC BY 4.0 for everything else.** Owner decision, the same as the companion course. `LICENSE` is the MIT text; `LICENSE-CONTENT.md` names which paths are code and gives the CC BY 4.0 attribution. Quoted specifications are not relicensed. Licences already granted cannot be withdrawn from copies people have, so treat this as permanent.
 - **2026-11-05: Python labs are the core, real-stack labs are optional (option C).** Owner decision. A stdlib lab keeps browser runs, deterministic transcripts and every check. A real-stack lab shows what a simulation cannot, such as a pinned app failing under inspection, at the cost of being unchecked.
 - **2026-11-05: Separate repository, linked to the companion course.** Owner decision. The two courses have different lab infrastructure and partly different audiences, and one course's checks should not gate the other's releases.
