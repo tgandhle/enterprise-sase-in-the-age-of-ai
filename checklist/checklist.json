@@ -9,7 +9,7 @@
   },
   "source": "https://github.com/tgandhle/enterprise-sase-in-the-age-of-ai",
   "site": "https://tgandhle.github.io/enterprise-sase-in-the-age-of-ai/",
-  "rubric_version": "3.1",
+  "rubric_version": "1.0",
   "applicability_model_version": "1",
   "counts": {
     "Critical": 0,
