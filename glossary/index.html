@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary | Enterprise SASE in the Age of AI</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<nav class="site-nav" aria-label="Site"><div><a class="home" href="../index.html">Enterprise SASE in the Age of AI</a><a href="../index.html#course">Course</a><a href="../index.html#path">Modules</a><a href="../roadmap/index.html">Roadmap</a><a href="../checklist/index.html">Checklist</a><a href="index.html">Glossary</a></div></nav>
+<main>
+<h1>Glossary</h1>
+<p class="prose meta">Terms used across the site, in plain language. Each module links here the first time it uses one of these terms.</p>
+<dl class="gloss">
+<dt id="base64">Base64</dt><dd>A way of writing any bytes using only 64 printable characters, so a file can travel inside a text format such as JSON. It is an encoding, not encryption: anyone can decode it, but a pattern written for the original text will not match the encoded form.</dd>
+<dt id="certificate-pinning">Certificate pinning</dt><dd>An application accepting only a specific certificate or key for a server, instead of any certificate its trust store accepts. A pinned application refuses the certificate a TLS-inspecting gateway presents, so it fails to connect rather than being inspected.</dd>
+<dt id="data-loss-prevention">Data loss prevention (DLP)</dt><dd>Controls that look at data leaving an organization and block or record what matches a policy, such as a secret, a card number or a classification label. A DLP scan only finds what its detectors describe, in the encodings it decodes.</dd>
+<dt id="inspection-bypass-list">Inspection bypass list</dt><dd>The hosts or applications a gateway passes without decrypting, usually because they break under TLS inspection. Every entry is traffic the gateway cannot scan, so each one needs an owner and a reason.</dd>
+<dt id="sase">SASE</dt><dd>Secure access service edge. A way of delivering network security as one cloud service: web filtering, data loss prevention, zero trust network access, firewalling and wide area networking, under one policy. It is a delivery model built from separate functions, which is how this course teaches it.</dd>
+<dt id="secure-web-gateway">Secure web gateway (SWG)</dt><dd>A proxy that an organization's web traffic passes through on its way to the internet. It decides which destinations are allowed and, with TLS inspection, what content may be sent to them.</dd>
+<dt id="tls-inspection">TLS inspection</dt><dd>A gateway ending the client's encrypted session, reading the request, and opening its own encrypted session to the destination. The client must trust a certificate authority the organization controls. Without it, a gateway sees the destination host but not the content.</dd>
+</dl>
+</main>
+<footer>Part of Enterprise SASE in the Age of AI.</footer>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "model_version": "1",
+  "facts": [],
+  "items": {
+    "dlp-01": {
+      "condition": "always",
+      "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+    },
+    "dlp-02": {
+      "condition": "always",
+      "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+    },
+    "dlp-03": {
+      "condition": "always",
+      "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+    },
+    "dlp-04": {
+      "condition": "always",
+      "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+    },
+    "dlp-05": {
+      "condition": "always",
+      "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+    }
+  }
+}

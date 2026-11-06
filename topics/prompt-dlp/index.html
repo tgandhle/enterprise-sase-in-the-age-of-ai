@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt DLP under TLS inspection | Enterprise SASE in the Age of AI</title>
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="../../assets/course.js" defer></script>
+</head>
+<body data-course-lesson="prompt-dlp">
+<nav class="site-nav" aria-label="Site"><div><a class="home" href="../../index.html">Enterprise SASE in the Age of AI</a><a href="../../index.html#course">Course</a><a href="../../index.html#path">Modules</a><a href="../../roadmap/index.html">Roadmap</a><a href="../../checklist/index.html">Checklist</a><a href="../../glossary/index.html">Glossary</a></div></nav>
+<main>
+<p class="kicker">Part 1: Seeing AI traffic &middot; Module 2</p>
+<h1>Prompt DLP under TLS inspection</h1>
+<p class="meta">Last reviewed 2026-11-05 &middot; <a class="jump" href="#reference">Jump to reference</a></p>
+
+<div class="prose">
+<p><strong>Objective.</strong> After this module you can explain what a <a href="../../glossary/index.html#secure-web-gateway">secure web gateway</a> can and cannot see in a request to an AI assistant, configure its <a href="../../glossary/index.html#data-loss-prevention">data loss prevention</a> scan so that common encodings do not hide a secret, decide what happens to a body too large to scan, and say what the <a href="../../glossary/index.html#inspection-bypass-list">inspection bypass list</a> costs you.</p>
+<p><strong>Before you start.</strong> You should know that HTTPS encrypts a request between the client and the server, and that a gateway can only read the body if it performs <a href="../../glossary/index.html#tls-inspection">TLS inspection</a>. You should be able to read a JSON request body.</p>
+</div>
+<section class="lesson-status" aria-label="Lesson progress"><div><strong>Lesson 1 of 1</strong><span>Complete the lesson and quick check, then record your progress.</span></div><button class="button" type="button" data-mark-complete aria-pressed="false">Mark lesson complete</button></section>
+
+<span class="layer" id="learn">Learn</span>
+
+<h2>1. The attack</h2>
+<div class="prose">
+<p>Running example: a support engineer at ExampleCorp is chasing a failed payment retry. They paste the service log into ExampleCorp's approved AI assistant, <code>chat.assistant.example</code>, and ask what went wrong. The log line carries a live API key for ExampleCorp's payment partner. Company names are fictional.</p>
+<p>Nobody here meant harm. The same paths work for someone who does. ExampleCorp routes all web traffic through a gateway, and each configuration of that gateway catches a different set of these requests:</p>
+</div>
+<div class="wrap"><table>
+<thead><tr><th>The key reaches the assistant when it is</th><th>Host allowlist only</th><th>Inspect, scan raw bytes</th><th>Inspect, scan decoded content</th><th>Decoded, and block what it cannot scan</th></tr></thead>
+<tbody>
+<tr><td>Pasted into the prompt as it is</td><td class="yes">Works</td><td class="no">Blocked</td><td class="no">Blocked</td><td class="no">Blocked</td></tr>
+<tr><td>Written as JSON <code>\u</code> escapes</td><td class="yes">Works</td><td class="yes">Works</td><td class="no">Blocked</td><td class="no">Blocked</td></tr>
+<tr><td>Inside an attached file, sent as <a href="../../glossary/index.html#base64">base64</a></td><td class="yes">Works</td><td class="yes">Works</td><td class="no">Blocked</td><td class="no">Blocked</td></tr>
+<tr><td>At the end of 74 KB of pasted log</td><td class="yes">Works</td><td class="yes">Works</td><td class="yes">Works</td><td class="no">Blocked</td></tr>
+<tr><td>Sent from the assistant's desktop app, which is on the bypass list</td><td class="yes">Works</td><td class="yes">Works</td><td class="yes">Works</td><td class="yes">Works</td></tr>
+</tbody></table></div>
+<p class="prose">The last row never turns green. A host the gateway does not decrypt is a host it cannot scan, whatever the scan does. Section 5 covers what to do about it.</p>
+
+<h2>2. Why it works</h2>
+<div class="prose">
+<p>A gateway with TLS inspection ends the client's TLS session, reads the request, and opens its own session to the destination. Only then can a DLP scanner look at the body. Four broken assumptions cause most prompt DLP failures:</p>
+<ul>
+<li><strong>"An approved destination is a safe destination."</strong> An allowlist decides where data may go. It says nothing about what the data is. The approved assistant is exactly where staff paste things.</li>
+<li><strong>"The scanner sees what the assistant sees."</strong> Only if it reads the content the way the assistant will. A JSON parser turns <code>e</code> into <code>e</code> before the model reads it, so a pattern run over the raw bytes misses text that arrives perfectly readable. A base64 file is the same story: the assistant decodes it, a raw-byte scan does not.</li>
+<li><strong>"If the scanner found nothing, there was nothing."</strong> Every scanner has a size limit. A body over it was not scanned, and a policy that lets it through has turned "too large to scan" into "allowed".</li>
+<li><strong>"All traffic to the assistant goes through inspection."</strong> Some applications pin their certificate, so they refuse the gateway's certificate and fail to connect when inspected. The usual fix is to put them on a bypass list, and from then on that traffic is encrypted end to end past the gateway.</li>
+</ul>
+</div>
+
+<h2>3. The control</h2>
+<h3>What the gateway decides, in order</h3>
+<ol class="steps prose">
+<li>Route all web traffic through the gateway. A device that can reach the internet directly has no gateway control at all.</li>
+<li>Check the destination. Unknown or unapproved AI destination: block. A host on the bypass list is allowed without inspection, so every entry is a decision someone has to own.</li>
+<li>Decrypt the request. Without this step, nothing below can run.</li>
+<li>Check the body size against the scan limit. Over it: block, for AI destinations. Never pass a body the scanner has not read.</li>
+<li>Decode the content the way the destination will: parse the JSON, take every string value, and decode every attachment the request declares as base64. If the body does not decode, block it.</li>
+<li>Run the detectors over the decoded content. A match: block, and show the user a page that says what was found and what to do instead.</li>
+<li>Log every block and every bypass, with the user and the destination. The log is what tells you a bypass is being used to move data.</li>
+</ol>
+
+<h3>The whole system</h3>
+<div class="diagram">
+<svg viewBox="0 0 1100 380" width="100%" style="min-width:900px" role="img">
+<title>Where prompt DLP sits between ExampleCorp staff and an AI assistant</title>
+<desc>On the left, ExampleCorp devices: a browser and the assistant's desktop app. Browser traffic goes to the secure web gateway, which decrypts it, checks size, decodes the content, and runs the DLP scan, then forwards it to the assistant vendor or sends it to a block page. Desktop app traffic is on the bypass list and goes past the inspection steps straight to the vendor, still encrypted. Every decision is written to the gateway log.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<rect class="zone" x="20" y="20" width="230" height="340" rx="12"/>
+<text class="lab" x="36" y="42">ExampleCorp devices</text>
+<g class="p"><rect x="40" y="70" width="190" height="56" rx="8"/><text class="th" x="135" y="92" text-anchor="middle">Browser</text><text class="ts" x="135" y="112" text-anchor="middle">Pastes the log</text></g>
+<g class="p"><rect x="40" y="250" width="190" height="56" rx="8"/><text class="th" x="135" y="272" text-anchor="middle">Desktop app</text><text class="ts" x="135" y="292" text-anchor="middle">Pins its certificate</text></g>
+
+<rect class="zone" x="270" y="20" width="600" height="340" rx="12"/>
+<text class="lab" x="286" y="42">Secure web gateway</text>
+<g class="h"><rect x="290" y="70" width="130" height="56" rx="8"/><text class="th" x="355" y="92" text-anchor="middle">Decrypt</text><text class="ts" x="355" y="112" text-anchor="middle">TLS inspection</text></g>
+<g class="h"><rect x="435" y="70" width="130" height="56" rx="8"/><text class="th" x="500" y="92" text-anchor="middle">Size check</text><text class="ts" x="500" y="112" text-anchor="middle">Over limit: block</text></g>
+<g class="h"><rect x="580" y="70" width="130" height="56" rx="8"/><text class="th" x="645" y="92" text-anchor="middle">Decode</text><text class="ts" x="645" y="112" text-anchor="middle">JSON, base64</text></g>
+<g class="h"><rect x="725" y="70" width="130" height="56" rx="8"/><text class="th" x="790" y="92" text-anchor="middle">DLP scan</text><text class="ts" x="790" y="112" text-anchor="middle">Detectors</text></g>
+<g class="r"><rect x="435" y="160" width="420" height="50" rx="8"/><text class="th" x="645" y="180" text-anchor="middle">Block page and log</text><text class="ts" x="645" y="198" text-anchor="middle">Too large, not decodable, or secret found</text></g>
+<g class="s"><rect x="290" y="250" width="200" height="56" rx="8"/><text class="th" x="390" y="272" text-anchor="middle">Bypass list</text><text class="ts" x="390" y="292" text-anchor="middle">Passed still encrypted</text></g>
+<g class="s"><rect x="655" y="250" width="200" height="56" rx="8"/><text class="th" x="755" y="272" text-anchor="middle">Gateway log</text><text class="ts" x="755" y="292" text-anchor="middle">Every block and bypass</text></g>
+<line class="arr" x1="230" y1="98" x2="286" y2="98" marker-end="url(#a)"/>
+<line class="arr" x1="420" y1="98" x2="431" y2="98" marker-end="url(#a)"/>
+<line class="arr" x1="565" y1="98" x2="576" y2="98" marker-end="url(#a)"/>
+<line class="arr" x1="710" y1="98" x2="721" y2="98" marker-end="url(#a)"/>
+<line class="rej" x1="500" y1="126" x2="500" y2="156" marker-end="url(#a)"/>
+<line class="rej" x1="790" y1="126" x2="790" y2="156" marker-end="url(#a)"/>
+<line class="arr" x1="230" y1="278" x2="286" y2="278" marker-end="url(#a)"/>
+<line class="leader" x1="490" y1="278" x2="655" y2="278"/>
+
+<rect class="zone" x="890" y="20" width="190" height="340" rx="12"/>
+<text class="lab" x="906" y="42">Assistant vendor</text>
+<g class="g"><rect x="905" y="70" width="160" height="56" rx="8"/><text class="th" x="985" y="92" text-anchor="middle">chat.assistant</text><text class="ts" x="985" y="112" text-anchor="middle">Reads decoded text</text></g>
+<g class="g"><rect x="905" y="250" width="160" height="56" rx="8"/><text class="th" x="985" y="272" text-anchor="middle">desktop.assistant</text><text class="ts" x="985" y="292" text-anchor="middle">Never inspected</text></g>
+<line class="arr" x1="855" y1="98" x2="901" y2="98" marker-end="url(#a)"/>
+<path class="arr" d="M390 306 L390 340 L880 340 L880 278 L901 278" fill="none" marker-end="url(#a)"/>
+</svg>
+<div class="legend"><span class="lg-p">ExampleCorp devices</span><span class="lg-h">Gateway inspection steps</span><span class="lg-s">Gateway configuration and records</span><span class="lg-r">Block path</span></div>
+</div>
+<p class="prose meta">The vendor boxes are outside ExampleCorp's control. What the vendor keeps, trains on, or shows to its own staff is a contract question, not a gateway one.</p>
+
+<h2>4. Defaults and when to change them</h2>
+<div class="wrap"><table>
+<thead><tr><th>Decision</th><th>Starting default</th><th>Change it when</th></tr></thead>
+<tbody>
+<tr><td>Inspection for AI destinations</td><td>Decrypt and scan every request to an approved AI destination</td><td>Never skip it for the approved ones. They are where the data goes.</td></tr>
+<tr><td>Body over the scan limit</td><td>Block, with a page that tells the user to send less</td><td>Allow only to a destination you would accept the data at unscanned, and log it.</td></tr>
+<tr><td>Body that does not decode</td><td>Block</td><td>Never for AI destinations. A body the scanner cannot read is a body it did not scan.</td></tr>
+<tr><td>What gets decoded</td><td>JSON strings and every attachment the request declares as base64</td><td>Add each further encoding the destination accepts, such as compressed bodies or archives.</td></tr>
+<tr><td>Bypass list</td><td>Empty for AI destinations. A pinned app is blocked, and staff use the browser</td><td>Allow a pinned app only with a named owner, a reason, a review date, and an endpoint control that covers what the gateway cannot.</td></tr>
+<tr><td>Detectors</td><td>Secrets in the formats your organization issues, plus your data classification labels</td><td>Add a detector for each new secret format the day it is issued, not after the first leak.</td></tr>
+</tbody></table></div>
+
+<h2>5. What it proves, and what it doesn't</h2>
+<div class="prose">
+<p><strong>Proves:</strong> a request that passed through the gateway, was under the scan limit, decoded cleanly, and matched no detector, did not contain anything those detectors look for, in any encoding the gateway decoded.</p>
+<p><strong>Doesn't prove:</strong> that the data is safe. A detector finds the patterns it was written for, so a customer's address in free text, a secret in a format nobody wrote a pattern for, or a key split across two prompts can still pass. It proves nothing about traffic on the bypass list, traffic from a device that does not route through the gateway, or anything a user types on a personal phone. And it says nothing about what the assistant does with what it receives: that side is module 24, <a href="https://tgandhle.github.io/api-security-in-the-age-of-ai/topics/data-in-model-context/index.html">Data in model context</a>, of API Security in the Age of AI.</p>
+<div class="callout warn"><strong>The bypass list is a policy, not a technical limit.</strong> A pinned app on the bypass list sends its traffic past every inspection step. Removing it from the list does not make it inspectable: the app refuses the gateway's certificate and stops working. The real choice is to block the app and keep staff on the browser, or to allow it uninspected and cover it with an endpoint control. Write down which one you chose, and why.</div>
+</div>
+
+<h2>6. Prove it</h2>
+<div class="prose">
+<p>A working configuration must block every one of these on an approved AI destination. If any is allowed, the control is broken:</p>
+<ul>
+<li>A test secret pasted into a prompt as it is.</li>
+<li>The same secret with every character written as a JSON <code>\u</code> escape.</li>
+<li>The same secret inside a file attached as base64.</li>
+<li>The same secret placed just past the scan limit, and a body exactly one byte over the limit with no secret at all.</li>
+<li>A body that is not valid JSON, sent with a JSON content type.</li>
+<li>A request to an AI destination that is not on the approved list.</li>
+</ul>
+<p>And it must allow a clean prompt. A control that blocks ordinary use gets turned off.</p>
+</div>
+
+<h2>7. Lab</h2>
+<div class="prose">
+<p>Download <a href="../../labs/prompt_dlp_lab.py"><code>labs/prompt_dlp_lab.py</code></a> and run it with Python 3. It needs no packages beyond the standard library, sends nothing over the network, and makes a fake key in a fictional format on each run. On Windows, use <code>py -3</code> wherever this page shows <code>python3</code>.</p>
+</div>
+<pre><code>$ python3 labs/prompt_dlp_lab.py
+key: random, this run only
+scan limit: 65536 bytes
+
+A. host allowlist only
+1. clean prompt                  allow: not inspected
+2. key pasted in the prompt      allow: not inspected
+3. key written as \u escapes     allow: not inspected
+4. key in an attached file       allow: not inspected
+5. key after 74 KB of log        allow: not inspected
+6. key sent from desktop app     allow: not inspected (bypass list)
+
+B. inspect, scan raw bytes
+1. clean prompt                  allow: nothing found
+2. key pasted in the prompt      block: secret found
+3. key written as \u escapes     allow: nothing found
+4. key in an attached file       allow: nothing found
+5. key after 74 KB of log        allow: too large to scan
+6. key sent from desktop app     allow: not inspected (bypass list)
+
+C. inspect, scan decoded content
+1. clean prompt                  allow: nothing found
+2. key pasted in the prompt      block: secret found
+3. key written as \u escapes     block: secret found
+4. key in an attached file       block: secret found
+5. key after 74 KB of log        allow: too large to scan
+6. key sent from desktop app     allow: not inspected (bypass list)
+
+D. C, and block what it cannot scan
+1. clean prompt                  allow: nothing found
+2. key pasted in the prompt      block: secret found
+3. key written as \u escapes     block: secret found
+4. key in an attached file       block: secret found
+5. key after 74 KB of log        block: too large to scan
+6. key sent from desktop app     allow: not inspected (bypass list)</code></pre>
+<div class="prose">
+<p><strong>Try next:</strong></p>
+<ul>
+<li>Line 1 is allowed by every configuration. Keep it that way when you change the lab: a detector that blocks a clean prompt is a detector someone will switch off.</li>
+<li>Add a second detector to <code>KEY_PATTERN</code> for a secret format of your own, plant it in request 2, and see which configurations catch it.</li>
+<li>To run the same policy against real HTTPS traffic through a real proxy, follow <a href="../../stack/prompt-dlp/README.md"><code>stack/prompt-dlp/README.md</code></a>. It is optional and needs more setup than this lab.</li>
+</ul>
+</div>
+
+<h2>8. Check your understanding</h2>
+<details><summary>Why does configuration B miss the key written as <code>\u</code> escapes, when it catches the same key pasted plainly?</summary><p>B runs the pattern over the raw bytes, where each character of the key is six characters of escape. The assistant's JSON parser turns them back into the key before the model reads it. The scan has to read the content the way the destination does.</p></details>
+<details><summary>Configuration C decodes everything correctly. Why does it still let request 5 through?</summary><p>The body is over the scan limit, and C's policy for an oversized body is to pass it. The decoding never runs. Configuration D blocks what it cannot scan, which is the only one of the four that stops it.</p></details>
+<details><summary>The desktop app keeps breaking under inspection, so a colleague proposes removing it from the bypass list to "force" inspection. What happens?</summary><p>The app pins its certificate, so it refuses the gateway's certificate and stops connecting. The traffic is not inspected; it simply fails. The real decision is between blocking the app and allowing it uninspected with an endpoint control, and it needs an owner.</p></details>
+
+<section class="course-quiz" data-quiz data-quiz-id="prompt-dlp-check" data-correct-feedback="Correct. Decoding fixes the escapes and the attachment, but a body over the scan limit is never decoded. Blocking what the scanner cannot read is what stops it." data-incorrect-feedback="Not quite. Look at what happens before decoding runs. A body over the scan limit never reaches the decoder, so only the oversize policy can stop it.">
+<p class="kicker">Quick check</p>
+<h2>A secret past the scan limit</h2>
+<fieldset><legend>A gateway decodes JSON and base64 correctly, and its scan limit is 64 KB. A user pastes 74 KB of log with a key at the end. Which setting decides whether the key gets through?</legend>
+<label><input type="radio" name="dlp-limit" value="decode"> Whether the scanner decodes JSON escapes.</label>
+<label><input type="radio" name="dlp-limit" value="oversize" data-correct="true"> What the policy does with a body over the scan limit.</label>
+<label><input type="radio" name="dlp-limit" value="allowlist"> Whether the assistant is on the approved list.</label>
+</fieldset>
+<button class="button secondary" type="button" data-check-answer>Check answer</button><p class="quiz-feedback" data-quiz-feedback aria-live="polite"></p>
+</section>
+<section class="course-quiz course-exercises" data-exercises data-exercises-id="prompt-dlp-exercises">
+<p class="kicker">Exercises</p>
+<h2>Change one thing and predict the output</h2>
+<div class="prose">
+<p>Each exercise edits one place in <a href="../../labs/prompt_dlp_lab.py"><code>labs/prompt_dlp_lab.py</code></a> and asks what the run prints. The answers are the real output of each variant, not a reading of the code, so you can settle any disagreement by running it. The lab compares every result with the one it expects, so each of these edits also makes it exit 1 and list what differed. None of them needs a package.</p>
+</div>
+
+<article class="exercise" data-exercise data-exercise-id="dlp-x1" data-covers="dlp-02">
+<h3>1. The decoder stops decoding attachments</h3>
+<div class="prose">
+<p>In <code>texts_in</code>, the scanner decodes a file the request declares as base64. Replace the line that decodes it with one that passes the encoded text through unchanged:</p>
+</div>
+<pre><code>yield value["data"]</code></pre>
+<fieldset><legend>Which verdicts in the published transcript change?</legend>
+<label><input type="radio" name="dlp-x1" value="a"> Line 4 under B only.</label>
+<label><input type="radio" name="dlp-x1" value="b" data-correct="true"> Line 4 under C and D, which become <code>allow: nothing found</code>.</label>
+<label><input type="radio" name="dlp-x1" value="c"> Lines 3 and 4 under C and D.</label>
+<label><input type="radio" name="dlp-x1" value="d"> None. The key is still in the body.</label>
+</fieldset>
+<button class="button secondary" type="button" data-check-answer>Check answer</button>
+<p class="quiz-feedback" data-quiz-feedback aria-live="polite"></p>
+<details class="exercise-answers"><summary>Every option, and why</summary>
+<ul>
+<li data-option="a">B never calls <code>texts_in</code>. It scans the raw bytes, and it already let line 4 through.</li>
+<li data-option="b">Correct. C and D now scan the base64 text, which does not contain the key's characters in order, so both flip to <code>allow: nothing found</code> and the lab reports two mismatches. That is the gap check <code>dlp-02</code> in the <a href="#reference">Reference</a> layer closes.</li>
+<li data-option="c">Line 3 does not change. The <code>\u</code> escapes are decoded by the JSON parser, not by the attachment step you removed.</li>
+<li data-option="d">The key is in the body, but only as base64. A pattern matches characters, and base64 changes every one of them.</li>
+</ul>
+</details>
+</article>
+
+<article class="exercise" data-exercise data-exercise-id="dlp-x2" data-covers="dlp-03">
+<h3>2. The scan limit is doubled</h3>
+<div class="prose">
+<p>Change <code>SCAN_LIMIT = 64 * 1024</code> to <code>SCAN_LIMIT = 128 * 1024</code>.</p>
+</div>
+<fieldset><legend>What happens to line 5?</legend>
+<label><input type="radio" name="dlp-x2" value="a"> It changes under D only.</label>
+<label><input type="radio" name="dlp-x2" value="b"> It changes under C and D only.</label>
+<label><input type="radio" name="dlp-x2" value="c" data-correct="true"> It becomes <code>block: secret found</code> under B, C and D.</label>
+<label><input type="radio" name="dlp-x2" value="d"> Nothing. The body is still too large.</label>
+</fieldset>
+<button class="button secondary" type="button" data-check-answer>Check answer</button>
+<p class="quiz-feedback" data-quiz-feedback aria-live="polite"></p>
+<details class="exercise-answers"><summary>Every option, and why</summary>
+<ul>
+<li data-option="a">B and C change too. Once the body is under the limit, every inspecting configuration scans it.</li>
+<li data-option="b">B changes as well. The key in this request is written plainly, so a raw-byte scan finds it once it gets to scan at all.</li>
+<li data-option="c">Correct. The body is about 76 KB, so it is now scanned, and all three inspecting configurations find the key. The lab reports three mismatches. A bigger limit fixes this request and nothing else: a user with 130 KB of log is back where line 5 started. That is why check <code>dlp-03</code> in the <a href="#reference">Reference</a> layer is about what happens over the limit, not about the limit's size.</li>
+<li data-option="d">The body is about 76 KB, under the new limit of 131072 bytes.</li>
+</ul>
+</details>
+</article>
+
+<article class="exercise" data-exercise data-exercise-id="dlp-x3" data-covers="dlp-04">
+<h3>3. The desktop app comes off the bypass list</h3>
+<div class="prose">
+<p>Change <code>BYPASS = {PINNED_HOST}</code> to <code>BYPASS = set()</code>.</p>
+</div>
+<fieldset><legend>What does line 6 print under B, C and D, and what would really happen?</legend>
+<label><input type="radio" name="dlp-x3" value="a"> <code>allow: not inspected</code>, and that is what would really happen.</label>
+<label><input type="radio" name="dlp-x3" value="b" data-correct="true"> <code>block: secret found</code>, but a real pinned app would fail to connect instead.</label>
+<label><input type="radio" name="dlp-x3" value="c"> <code>block: secret found</code>, and that is what would really happen.</label>
+<label><input type="radio" name="dlp-x3" value="d"> <code>block: body could not be decoded</code>.</label>
+</fieldset>
+<button class="button secondary" type="button" data-check-answer>Check answer</button>
+<p class="quiz-feedback" data-quiz-feedback aria-live="polite"></p>
+<details class="exercise-answers"><summary>Every option, and why</summary>
+<ul>
+<li data-option="a">That is line 6 under A, which never inspects anything. B, C and D now scan the request.</li>
+<li data-option="b">Correct. The lab can scan the request because it does not model certificate pinning, so all three inspecting configurations find the key and the lab reports four mismatches, one for A's changed wording. A real app that pins its certificate refuses the gateway's certificate and stops connecting. Check <code>dlp-04</code> in the <a href="#reference">Reference</a> layer asks for the decision a team actually faces: block the app, or allow it uninspected with an owner and an endpoint control.</li>
+<li data-option="c">The lab prints that, but a real pinned app never gets as far as sending the body. This is the one place the simulation is kinder than the network.</li>
+<li data-option="d">The body is ordinary JSON and decodes cleanly.</li>
+</ul>
+</details>
+</article>
+</section>
+
+<p class="course-next"><strong>Course progress:</strong> return to the <a href="../../index.html#course">course dashboard</a> to see your progress.</p>
+<span class="layer" id="reference" style="margin-top:3rem">Reference</span>
+<h2 style="border-top:none;margin-top:.5rem">Controls</h2>
+<p class="prose meta"><span class="label std">Standard</span> backed by a cited specification. <span class="label base">Baseline</span> this project's default, with reasoning above. <span class="label opt">Option</span> valid depending on the threat model.</p>
+<ul class="controls">
+<li><span class="label std">Standard</span>Route outbound traffic through authenticated proxy servers at managed interfaces. NIST SP 800-53 Rev 5.2.0 control SC-7(8) requires this for the traffic and networks the organization defines, and its discussion names web content filtering devices as one of the most common such proxies.</li>
+<li><span class="label std">Standard</span>Prevent the exfiltration of information, and conduct exfiltration tests at a defined frequency. NIST SP 800-53 Rev 5.2.0 control SC-7(10), parts (a) and (b). Its discussion says prevention applies to both intentional and unintentional exfiltration, and lists data loss and data leakage prevention tools among the techniques.</li>
+<li><span class="label std">Standard</span>Enforce approved authorizations for information flows between connected systems. NIST SP 800-53 Rev 5.2.0 control AC-4. Its discussion includes limiting transfers between organizations based on data structures and content.</li>
+<li><span class="label base">Baseline</span>Decrypt and scan every request to an approved AI destination. An allowlist entry is not a reason to skip inspection.</li>
+<li><span class="label base">Baseline</span>Scan the decoded content: JSON string values and every attachment the request declares as base64, at minimum.</li>
+<li><span class="label base">Baseline</span>Block a body over the scan limit, and a body that does not decode, when the destination is an AI service.</li>
+<li><span class="label base">Baseline</span>Keep the bypass list empty for AI destinations. Block an app that pins its certificate unless an owner accepts the gap in writing.</li>
+<li><span class="label opt">Option</span>Allow a pinned app uninspected, with an endpoint DLP control on the devices that run it and a review date on the bypass entry.</li>
+<li><span class="label opt">Option</span>Coach instead of block for low-severity matches: show the user what was found and let them confirm, with the decision logged.</li>
+</ul>
+
+<h2>Review checklist items</h2>
+<p class="prose meta">These are collected into the <a href="../../checklist/index.html">site checklist</a>.</p>
+<ul class="checks">
+<li data-check="dlp-01" data-severity="High"><strong>Requests to approved AI destinations are decrypted and scanned</strong> <span>A destination allowlist decides where data may go. It is not a substitute for looking at what is sent.</span></li>
+<li data-check="dlp-02" data-severity="High"><strong>The scanner reads content the way the destination will</strong> <span>JSON escapes and declared base64 attachments are decoded before any detector runs. A body that does not decode is blocked.</span></li>
+<li data-check="dlp-03" data-severity="High"><strong>A body over the scan limit is blocked for AI destinations</strong> <span>It is never passed unscanned. The limit is recorded and tested with a body one byte over it.</span></li>
+<li data-check="dlp-04" data-severity="Medium"><strong>Every AI host on the bypass list has an owner, a reason, a review date and a compensating control</strong> <span>A pinned app is blocked, or allowed uninspected with an endpoint control named in the entry.</span></li>
+<li data-check="dlp-05" data-severity="Medium"><strong>Exfiltration tests run on a schedule against AI destinations</strong> <span>They cover each case in section 6 of this lesson, including a clean prompt that must be allowed.</span></li>
+</ul>
+
+<h2>Sources</h2>
+<ul class="prose">
+<li><a href="https://github.com/usnistgov/oscal-content/blob/main/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog.json">NIST SP 800-53 Rev. 5.2.0: Security and Privacy Controls for Information Systems and Organizations</a>, in NIST's OSCAL catalog, version 5.2.0, last modified 2026-10-22, read 2026-11-05. Controls AC-4, SC-7(8) and SC-7(10).</li>
+</ul>
+</main>
+<footer>Part of Enterprise SASE in the Age of AI. Examples use fictional companies and the reserved <code>.example</code> domain. No real keys appear on this site.</footer>
+</body>
+</html>

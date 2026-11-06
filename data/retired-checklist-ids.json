@@ -1,0 +1,5 @@
+{
+  "schema_version": "1",
+  "note": "Checklist ids that were published and then withdrawn. An id listed here is never used again. tools/build_checklist.py fails if one appears on a topic page, or if an id leaves the published checklist without being listed here.",
+  "retired": []
+}

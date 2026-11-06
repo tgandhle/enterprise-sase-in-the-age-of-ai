@@ -1,0 +1,122 @@
+{
+  "home": {
+    "blocks": [
+      {
+        "tag": "section",
+        "attrs": {
+          "class": "course-hero",
+          "id": "course",
+          "data-course-dashboard": null
+        },
+        "html": "<section class=\"course-hero\" id=\"course\" data-course-dashboard>\n<p class=\"kicker\">Interactive learning course</p>\n<h1>Enterprise SASE in the Age of AI</h1>\n<div class=\"prose\">\n<p>For security engineers and architects who run or review the controls between an organization's people, agents and the internet. <a href=\"glossary/index.html#sase\">SASE</a> products bundle those controls into one vendor service, so this course takes them apart: each module builds one function in a small Python lab, shows the request that gets past it, and teaches the setting that stops it. The second half of each page is a reference you can use in design reviews.</p>\n<p class=\"meta\">Self-paced. Labs need Python 3 and nothing else. Some modules add an optional real-stack lab, with real proxies and real traffic, that needs more setup. Progress is stored only in this browser.</p>\n</div>\n<div class=\"course-progress\" aria-label=\"Course progress\"><p data-course-progress>0 of 1 lessons complete</p><div class=\"progress-track\" role=\"progressbar\" aria-label=\"Lesson progress\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span data-course-progress-bar></span></div><p class=\"meta\" data-course-assessment-progress>0 of 1 published quick checks passed</p></div>\n<div class=\"course-actions\"><a class=\"button\" href=\"topics/prompt-dlp/index.html\">Start with the first published module</a><button class=\"button secondary\" type=\"button\" data-reset-progress>Reset progress</button></div>\n</section>"
+      },
+      {
+        "tag": "section",
+        "attrs": {
+          "class": "course-brief",
+          "id": "overview",
+          "aria-labelledby": "course-overview"
+        },
+        "html": "<section class=\"course-brief\" id=\"overview\" aria-labelledby=\"course-overview\">\n<p class=\"kicker\">Course overview</p>\n<h2 id=\"course-overview\">Course briefing</h2>\n<div class=\"course-brief-grid\">\n<article><h3>Audience</h3><p>Security engineers and architects who can read Python and HTTP requests. You do not need to have run a SASE product, and the glossary explains the vocabulary.</p></article>\n<article><h3>Prerequisites</h3><p>A browser and Python 3. The optional real-stack labs also need the packages they name. No account or production credentials are required.</p></article>\n<article><h3>Current release</h3><p>One module is published. The others are planned and listed on the roadmap.</p></article>\n<article><h3>Delivery</h3><p>Self-paced reading, runnable labs, and short knowledge checks.</p></article>\n</div>\n<h3>A companion course</h3>\n<p class=\"prose\">This course looks at traffic from the network. <a href=\"https://tgandhle.github.io/api-security-in-the-age-of-ai/\">API Security in the Age of AI</a> looks at the same systems from the API. Where a module here meets one there, the lesson links to it.</p>\n<h3>Assessment and completion</h3>\n<p class=\"prose\">Completion means marking each lesson complete and passing its quick check. The browser records those actions only on this device. Quick checks give immediate feedback, but they are not proctored and do not issue a certificate or training record.</p>\n</section>"
+      },
+      {
+        "tag": "h2",
+        "attrs": {
+          "id": "path"
+        },
+        "html": "<h2 id=\"path\">Modules</h2>"
+      },
+      {
+        "tag": "p",
+        "attrs": {
+          "class": "meta"
+        },
+        "html": "<p class=\"meta\">Module 2 is published. Every other module is planned: its entry links to the roadmap.</p>"
+      }
+    ]
+  },
+  "glossary": {
+    "intro": "<h1>Glossary</h1>\n<p class=\"prose meta\">Terms used across the site, in plain language. Each module links here the first time it uses one of these terms.</p>",
+    "terms": [
+      {
+        "id": "base64",
+        "term": "Base64",
+        "definition": "A way of writing any bytes using only 64 printable characters, so a file can travel inside a text format such as JSON. It is an encoding, not encryption: anyone can decode it, but a pattern written for the original text will not match the encoded form."
+      },
+      {
+        "id": "certificate-pinning",
+        "term": "Certificate pinning",
+        "definition": "An application accepting only a specific certificate or key for a server, instead of any certificate its trust store accepts. A pinned application refuses the certificate a TLS-inspecting gateway presents, so it fails to connect rather than being inspected."
+      },
+      {
+        "id": "data-loss-prevention",
+        "term": "Data loss prevention (DLP)",
+        "definition": "Controls that look at data leaving an organization and block or record what matches a policy, such as a secret, a card number or a classification label. A DLP scan only finds what its detectors describe, in the encodings it decodes."
+      },
+      {
+        "id": "inspection-bypass-list",
+        "term": "Inspection bypass list",
+        "definition": "The hosts or applications a gateway passes without decrypting, usually because they break under TLS inspection. Every entry is traffic the gateway cannot scan, so each one needs an owner and a reason."
+      },
+      {
+        "id": "sase",
+        "term": "SASE",
+        "definition": "Secure access service edge. A way of delivering network security as one cloud service: web filtering, data loss prevention, zero trust network access, firewalling and wide area networking, under one policy. It is a delivery model built from separate functions, which is how this course teaches it."
+      },
+      {
+        "id": "secure-web-gateway",
+        "term": "Secure web gateway (SWG)",
+        "definition": "A proxy that an organization's web traffic passes through on its way to the internet. It decides which destinations are allowed and, with TLS inspection, what content may be sent to them."
+      },
+      {
+        "id": "tls-inspection",
+        "term": "TLS inspection",
+        "definition": "A gateway ending the client's encrypted session, reading the request, and opening its own encrypted session to the destination. The client must trust a certificate authority the organization controls. Without it, a gateway sees the destination host but not the content."
+      }
+    ]
+  },
+  "roadmap": {
+    "blocks": [
+      {
+        "tag": "p",
+        "attrs": {
+          "class": "kicker"
+        },
+        "html": "<p class=\"kicker\">Course roadmap</p>"
+      },
+      {
+        "tag": "h1",
+        "attrs": {},
+        "html": "<h1>Chapter status</h1>"
+      },
+      {
+        "tag": "p",
+        "attrs": {
+          "class": "prose roadmap-note"
+        },
+        "html": "<p class=\"prose roadmap-note\">Module 2 is published. Everything else on this page is planned and not yet written. A plan can change before a module is built.</p>"
+      },
+      {
+        "tag": "section",
+        "attrs": {
+          "aria-labelledby": "part-1"
+        },
+        "html": "<section aria-labelledby=\"part-1\">\n<h2 id=\"part-1\">Part 1: Seeing AI traffic</h2>\n<ul class=\"prose\">\n<li><strong>Module 1, Shadow AI discovery.</strong> Planned. Finding AI services in gateway and DNS logs, and telling sanctioned use from the rest.</li>\n<li><strong>Module 2, Prompt DLP under TLS inspection.</strong> Published.</li>\n<li><strong>Module 3, Streaming responses and DLP.</strong> Planned. What a scanner sees when the answer arrives as a stream of server-sent events. Will link to module 33 of <a href=\"https://tgandhle.github.io/api-security-in-the-age-of-ai/\">API Security in the Age of AI</a>.</li>\n</ul>\n</section>"
+      },
+      {
+        "tag": "section",
+        "attrs": {
+          "aria-labelledby": "part-2"
+        },
+        "html": "<section aria-labelledby=\"part-2\">\n<h2 id=\"part-2\">Part 2: Access for people and agents</h2>\n<ul class=\"prose\">\n<li><strong>Module 4, VPN compared with zero trust network access.</strong> Planned. What each one lets a connected device reach.</li>\n<li><strong>Module 5, Agents as users of zero trust network access.</strong> Planned. An agent reaching an internal MCP server, and what a policy written for people gets wrong. Will link to modules 8 and 20 of the API course.</li>\n<li><strong>Module 6, Where AI policy lives: gateway or proxy.</strong> Planned. Which decisions an AI gateway can make that a web proxy cannot, and the reverse. Will link to module 12 of the API course.</li>\n</ul>\n</section>"
+      },
+      {
+        "tag": "section",
+        "attrs": {
+          "aria-labelledby": "part-3"
+        },
+        "html": "<section aria-labelledby=\"part-3\">\n<h2 id=\"part-3\">Part 3: Detection</h2>\n<ul class=\"prose\">\n<li><strong>Module 7, Detecting AI misuse in gateway logs.</strong> Planned. Will link to module 30 of the API course.</li>\n</ul>\n</section>"
+      }
+    ]
+  }
+}

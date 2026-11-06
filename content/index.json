@@ -1,0 +1,11 @@
+{
+  "total": 1,
+  "lessons": [
+    {
+      "slug": "prompt-dlp",
+      "lesson_number": 1,
+      "module": 2,
+      "title": "Prompt DLP under TLS inspection"
+    }
+  ]
+}

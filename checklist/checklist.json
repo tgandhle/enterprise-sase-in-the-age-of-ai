@@ -1,0 +1,83 @@
+{
+  "schema_version": "1",
+  "data_version": "72982ea13b3510b8",
+  "license": {
+    "id": "CC-BY-4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "notice": "The review checklist data in this file is licensed under the Creative Commons Attribution 4.0 International licence. See CHECKLIST-LICENSE.md in the repository. The lessons, glossary and other course material are not covered by this licence.",
+    "attribution": "Review checklist from Enterprise SASE in the Age of AI, copyright (c) 2026 tgandhle, https://github.com/tgandhle/enterprise-sase-in-the-age-of-ai, licensed CC BY 4.0."
+  },
+  "source": "https://github.com/tgandhle/enterprise-sase-in-the-age-of-ai",
+  "site": "https://tgandhle.github.io/enterprise-sase-in-the-age-of-ai/",
+  "rubric_version": "3.1",
+  "applicability_model_version": "1",
+  "counts": {
+    "Critical": 0,
+    "High": 3,
+    "Medium": 2
+  },
+  "items": [
+    {
+      "id": "dlp-01",
+      "severity": "High",
+      "title": "Requests to approved AI destinations are decrypted and scanned",
+      "detail": "A destination allowlist decides where data may go. It is not a substitute for looking at what is sent.",
+      "lesson": "Prompt DLP under TLS inspection",
+      "lesson_path": "topics/prompt-dlp/index.html#reference",
+      "applicability": {
+        "condition": "always",
+        "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+      }
+    },
+    {
+      "id": "dlp-02",
+      "severity": "High",
+      "title": "The scanner reads content the way the destination will",
+      "detail": "JSON escapes and declared base64 attachments are decoded before any detector runs. A body that does not decode is blocked.",
+      "lesson": "Prompt DLP under TLS inspection",
+      "lesson_path": "topics/prompt-dlp/index.html#reference",
+      "applicability": {
+        "condition": "always",
+        "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+      }
+    },
+    {
+      "id": "dlp-03",
+      "severity": "High",
+      "title": "A body over the scan limit is blocked for AI destinations",
+      "detail": "It is never passed unscanned. The limit is recorded and tested with a body one byte over it.",
+      "lesson": "Prompt DLP under TLS inspection",
+      "lesson_path": "topics/prompt-dlp/index.html#reference",
+      "applicability": {
+        "condition": "always",
+        "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+      }
+    },
+    {
+      "id": "dlp-04",
+      "severity": "Medium",
+      "title": "Every AI host on the bypass list has an owner, a reason, a review date and a compensating control",
+      "detail": "A pinned app is blocked, or allowed uninspected with an endpoint control named in the entry.",
+      "lesson": "Prompt DLP under TLS inspection",
+      "lesson_path": "topics/prompt-dlp/index.html#reference",
+      "applicability": {
+        "condition": "always",
+        "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+      }
+    },
+    {
+      "id": "dlp-05",
+      "severity": "Medium",
+      "title": "Exfiltration tests run on a schedule against AI destinations",
+      "detail": "They cover each case in section 6 of this lesson, including a clean prompt that must be allowed.",
+      "lesson": "Prompt DLP under TLS inspection",
+      "lesson_path": "topics/prompt-dlp/index.html#reference",
+      "applicability": {
+        "condition": "always",
+        "reason": "No architecture facts are declared yet for this course, so nothing can rule the item out. The fact model is an open owner decision."
+      }
+    }
+  ],
+  "facts": [],
+  "retired": []
+}
