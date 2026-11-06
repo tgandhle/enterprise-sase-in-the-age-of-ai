@@ -47,4 +47,4 @@ All ten exit 0 when the site is clean.
 
 ## Licence
 
-Copyright (c) 2026 tgandhle. All rights reserved, on the same terms as the companion course: see [LICENSE](LICENSE). The checklist data is CC BY 4.0: see [CHECKLIST-LICENSE.md](CHECKLIST-LICENSE.md). These terms were copied as a placeholder and are an open decision.
+Copyright (c) 2026 tgandhle. The code (`labs/`, `tools/`, `stack/`, and the site's script and stylesheet) is licensed MIT: see [LICENSE](LICENSE). Everything else, including the lessons, glossary and checklist, is licensed CC BY 4.0: see [LICENSE-CONTENT.md](LICENSE-CONTENT.md) for the exact split and the attribution to use, and [CHECKLIST-LICENSE.md](CHECKLIST-LICENSE.md) for the checklist data's own attribution line. Quoted specifications remain the property of their publishers.
