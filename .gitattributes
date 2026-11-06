@@ -20,3 +20,5 @@ review/manifest.json linguist-generated=true
 coverage/index.html linguist-generated=true
 labs/*.lab.js linguist-generated=true
 assets/search-index.js linguist-generated=true
+
+* text=auto eol=lf
