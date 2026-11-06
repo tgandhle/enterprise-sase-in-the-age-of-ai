@@ -31,7 +31,7 @@ Each page has two layers, in this order.
 
 ## Severity rubric
 
-Version 3.1, copied unchanged from API Security in the Age of AI. **Open owner decision:** the reference model below describes an API, not an organization's outbound traffic, so it has to be adapted for this course before the checklist is treated as rated. Until then, every severity in this course is provisional. When the model changes, rate every item again.
+Version 1.0, 2026-11-06. Adapted from version 3.1 of the rubric in API Security in the Age of AI: the reference model, the attacker, the Critical-class outcomes and preconditions P5 and P6 are rewritten for an organization's traffic to the internet, its vendors and its own applications. The classification, the rating steps and the tie rules are unchanged. When the model changes, rate every item again.
 
 Every checklist item's default severity comes from this rubric. Rate a new item with it before the item is published. Do not change the rubric to fit one item: a change to the rubric means every item is rated again. The short form readers see on the checklist page is `data/severity-rubric-summary.json`. When the version here changes, update that file and its `rubric_version`; `tools/build_checklist.py` fails until the two agree.
 
@@ -39,11 +39,11 @@ The default answers one question: what is the consequence of losing the security
 
 ### Reference model
 
-- An API reachable from the internet, holding other parties' data or able to move money.
+- An organization whose people, managed devices and AI agents reach the internet, SaaS and AI services, and its own internal applications through the controls this course teaches. It holds its own data, its customers' data, and credentials.
 - Own-property rule. Rate the security property the item itself provides. Another control that makes the same decision gets no credit: for rating purposes it is absent. Two items that make the same decision can both get the same rating.
 - Do not remove a different security decision merely because it also mitigates the same overall attack. A control does not inherit the consequence of a separate authorization, execution or containment decision it does not itself make. Those decisions, and all unrelated controls, stay in place.
 - A control whose own effect is to raise attack cost, improve provenance or framing, reduce discoverability, or otherwise provide defence in depth is rated on that direct effect. It is not Critical only because another boundary control is imagined absent.
-- The attacker is anonymous, an ordinary authenticated user or tenant, or anyone who can put content in front of a model the system runs. The attacker has no position inside the deployment's network and is not a party the system trusts, unless a precondition below is counted.
+- The attacker is anonymous on the internet, the operator of a malicious or compromised site or service, anyone who can put content in front of a person or an agent the organization runs, or an ordinary staff member or agent deliberately acting beyond what they are allowed. The attacker has no position inside the organization's network, holds no administrative role, and is not a vendor or party the organization trusts, unless a precondition below is counted. An honest mistake with no attacker is a precondition (P6), not the base case.
 - Applicability is assumed from the item's scope. An agent item is rated with an agent present, a webhook item with a webhook endpoint present. Applicability does not lower severity.
 - Not considered: how common the flaw is, how hard the fix or the attack is, or whether a standard requires the control.
 
@@ -65,7 +65,7 @@ The detail text decides. The title is shorthand.
 
 ### Step 2: rate it
 
-**Enforcing.** A Critical-class outcome is any of: (a) read or change another party's data; (b) act as another identity, increase privilege, or obtain a credential, token or session the attacker is not authorized to obtain; (c) run code or commands, or reach a network the caller should not; (d) cause an unauthorized consequential action, such as a payment, message, deletion, external side effect or irreversible state change.
+**Enforcing.** A Critical-class outcome is any of: (a) the organization's data or a credential reaches a party or destination not authorized to receive it; (b) a person, device or agent reaches a network, application or resource it should not; (c) act as another identity, increase privilege, or obtain a credential, token or session the attacker is not authorized to obtain; (d) content from outside runs code or commands on a managed device or inside the organization's network; (e) an unauthorized consequential action, such as a payment, message, deletion, external side effect or irreversible state change. Data reaching a contracted vendor that is not authorized to hold it is not by itself outcome (a): harm from there needs the vendor's side to misuse or lose it, which is precondition P5.
 
 - **Critical:** one request or one attacker-supplied piece of content directly causes a Critical-class outcome, with no precondition.
 - **High:** a Critical-class outcome needs exactly one precondition from the list below; or it needs repeated attempts and nothing else (guessing, brute force, timing); or, with no precondition, the missing control allows unbounded availability or cost impact; or the item is about a known but unspecified unpatched flaw, which is fixed at High because the item does not say what the flaw yields.
@@ -77,8 +77,8 @@ Preconditions. Each is something the attacker does not get for free. The failure
 - P1: holds a stolen or leaked credential, token, key or session.
 - P2: can read or alter traffic on the network path, or read a log or a proxy.
 - P4: a victim must act (visit a page, follow a link, start a flow, approve, rely on an answer).
-- P5: holds a trusted-party position: insider, administrator, partner, supplier or publisher of an artifact the system adopts, upstream or allowlisted host, or a sibling client or resource server of the same issuer.
-- P6: an ordinary fault with no attacker (a retry, a duplicate delivery, a crash, a wrong clock).
+- P5: holds a trusted-party position, or relies on one failing: an administrator or privileged insider, a contracted vendor or provider, including one that misuses or loses data it received, a partner, the publisher of an artifact the organization adopts, or an allowlisted host.
+- P6: an ordinary fault with no attacker (a retry, a duplicate delivery, a crash, a wrong clock), or an honest mistake by a staff member or an agent, such as pasting a secret into a prompt.
 - P7: a network position inside the deployment.
 
 There is no P3. Use the smallest set of preconditions that makes the attack work.
