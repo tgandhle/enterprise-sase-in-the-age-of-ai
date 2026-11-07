@@ -4,13 +4,15 @@ A learning course on the controls between an organization's people, agents and t
 
 It is the companion to [API Security in the Age of AI](https://github.com/tgandhle/api-security-in-the-age-of-ai), which looks at the same systems from the API side, and it uses the same page template, lab rules and checks.
 
+**Reading the lessons:** Open the [hosted learning site](https://tgandhle.github.io/enterprise-sase-in-the-age-of-ai/) in a browser. You can also choose **Code > Download ZIP**, extract the archive, and open `index.html` locally. Reading the pages needs no installation or build.
+
 ## Status
 
-One module is published. The rest are planned: see `roadmap/index.html`.
+One module is published. The rest are planned: see the [roadmap](https://tgandhle.github.io/enterprise-sase-in-the-age-of-ai/roadmap/).
 
 | Module | Lesson | Python lab | Real-stack lab |
 |---|---|---|---|
-| 2 | [Prompt DLP under TLS inspection](topics/prompt-dlp/index.html) | [`prompt_dlp_lab.py`](labs/prompt_dlp_lab.py) | [`stack/prompt-dlp/`](stack/prompt-dlp/README.md) |
+| 2 | [Prompt DLP under TLS inspection](https://tgandhle.github.io/enterprise-sase-in-the-age-of-ai/topics/prompt-dlp/) | [`prompt_dlp_lab.py`](labs/prompt_dlp_lab.py) | [`stack/prompt-dlp/`](stack/prompt-dlp/README.md) |
 
 ## Two kinds of lab
 
